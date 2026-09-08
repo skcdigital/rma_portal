@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DSD RMA Dashboard</title>
+  <style>
+    :root {
+      --red:    #ff5c04;
+      --red-d:  #e04e00;
+      --black:  #080f1e;
+      --dark:   #0d1a2e;
+      --mid:    #152540;
+      --border: #1f3454;
+      --text:   #e8eef8;
+      --muted:  #7a93b0;
+      --card:   #0f2035;
+      --green:  #22c55e;
+      --amber:  #f59e0b;
+      --blue:   #414aae;
+      --navy:   #003467;
+      --white:  #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--black); color: var(--text); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--black);
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .login-logo .box {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--red) 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 17px; color: #fff;
+    }
+    .login-logo .title { font-size: 20px; font-weight: 800; }
+    .login-logo .sub   { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+    .login-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .login-card p  { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+    .login-group { margin-bottom: 16px; }
+    .login-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
+    .login-group input {
+      width: 100%;
+      background: var(--mid);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 7px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .login-group input:focus { border-color: var(--red); }
+    .btn-login {
+      width: 100%;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 13px;
+      border-radius: 7px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background .15s;
+    }
+    .btn-login:hover { background: var(--red-d); }
+    .btn-login:disabled { background: #555; cursor: not-allowed; }
+    #login-error { color: #ff6666; font-size: 13px; margin-top: 10px; text-align: center; }
+
+    /* ── APP ── */
+    #app { display: none; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--dark);
+      border-bottom: 3px solid var(--red);
+      padding: 0 24px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .t-logo { display: flex; align-items: center; gap: 11px; }
+    .t-logo .box {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--red) 100%);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 15px; color: #fff;
+    }
+    .t-logo .name { font-size: 16px; font-weight: 700; }
+    .t-logo .sub  { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+    .t-right { display: flex; align-items: center; gap: 10px; }
+    .t-date  { font-size: 12px; color: var(--muted); }
+    .bell-btn {
+      position: relative;
+      background: var(--mid);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      transition: background .15s;
+    }
+    .bell-btn:hover { background: var(--border); }
+    .bell-badge {
+      position: absolute;
+      top: -4px; right: -4px;
+      background: var(--red);
+      color: #fff;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      display: none;
+    }
+    .user-chip {
+      background: var(--mid);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-logout:hover { color: var(--red); border-color: var(--red); }
+    .btn-new-rma {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-new-rma:hover { background: var(--red-d); }
+    .btn-link {
+      background: var(--mid);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-link:hover { background: var(--border); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex; gap: 4px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      padding: 12px 18px;
+      font-size: 13px; font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+      background: none; border-top: none; border-left: none; border-right: none;
+      transition: color .15s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--red); border-bottom-color: var(--red); }
+
+    /* ── CONTAINER ── */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+    /* ── STATS ── */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat::before { content:''; position:absolute; top:0;left:0;right:0;height:3px; }
+    .stat.s-total::before    { background: var(--red); }
+    .stat.s-entered::before  { background: var(--blue); }
+    .stat.s-active::before   { background: var(--amber); }
+    .stat.s-done::before     { background: var(--green); }
+    .stat-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin-bottom:8px; }
+    .stat-val { font-size:34px; font-weight:800; line-height:1; }
+    .stat.s-total .stat-val   { color: var(--red); }
+    .stat.s-entered .stat-val { color: var(--blue); }
+    .stat.s-active .stat-val  { color: var(--amber); }
+    .stat.s-done .stat-val    { color: var(--green); }
+    .stat-sub { font-size:11px; color:var(--muted); margin-top:5px; }
+
+    /* ── TOOLBAR ── */
+    .toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+    .search-wrap { position:relative; flex:1; min-width:200px; }
+    .search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted); }
+    .search-input {
+      width:100%; background:var(--card); border:1px solid var(--border); color:var(--text);
+      padding:8px 12px 8px 34px; border-radius:6px; font-size:13px; outline:none;
+    }
+    .search-input:focus { border-color:var(--red); }
+    .search-input::placeholder { color:var(--muted); }
+    .filter-sel {
+      background:var(--card); border:1px solid var(--border); color:var(--text);
+      padding:8px 12px; border-radius:6px; font-size:13px; cursor:pointer; outline:none;
+    }
+    .filter-sel:focus { border-color:var(--red); }
+    .btn-sm {
+      background:var(--mid); border:1px solid var(--border); color:var(--text);
+      padding:8px 14px; border-radius:6px; font-size:12px; font-weight:600;
+      cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;
+    }
+    .btn-sm:hover { background:var(--border); }
+
+    /* ── TABLE ── */
+    .tbl-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .tbl-scroll { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    thead th {
+      background:var(--mid); padding:11px 13px;
+      text-align:left; font-size:10px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.6px;
+      color:var(--muted); white-space:nowrap;
+      border-bottom:1px solid var(--border);
+    }
+    tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:rgba(255,92,4,.07); }
+    tbody td { padding:11px 13px; vertical-align:middle; }
+    .rma-n { font-family:monospace; font-weight:700; color:var(--red); font-size:12px; }
+    .empty { text-align:center; padding:50px 20px; color:var(--muted); }
+    .empty .ico { font-size:40px; margin-bottom:10px; }
+    .result-count { margin-top:8px; font-size:12px; color:var(--muted); text-align:right; }
+
+    /* ── STATUS BADGES ── */
+    .badge { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .b-entered   { background:rgba(59,130,246,.15); color:#60a5fa; }
+    .b-received  { background:rgba(168,85,247,.15);  color:#c084fc; }
+    .b-assess    { background:rgba(245,158,11,.15);  color:#fbbf24; }
+    .b-awaiting  { background:rgba(239,68,68,.15);   color:#f87171; }
+    .b-repair    { background:rgba(59,130,246,.2);   color:#93c5fd; }
+    .b-qc        { background:rgba(34,197,94,.15);   color:#4ade80; }
+    .b-ready     { background:rgba(34,197,94,.25);   color:#86efac; }
+    .b-returned  { background:rgba(156,163,175,.15); color:#9ca3af; }
+    .b-closed    { background:rgba(75,85,99,.2);     color:#6b7280; }
+    .w-yes { color:var(--green); font-weight:600; }
+    .w-no  { color:var(--red);   font-weight:600; }
+
+    /* ── MODAL ── */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:200; align-items:center; justify-content:center; padding:16px; }
+    .overlay.open { display:flex; }
+    .modal {
+      background:var(--dark); border:1px solid var(--border); border-radius:12px;
+      width:100%; max-width:720px; max-height:92vh; overflow-y:auto;
+      box-shadow:0 24px 80px rgba(0,0,0,.6);
+    }
+    .modal-hd {
+      padding:18px 22px 14px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; background:var(--dark); z-index:1;
+    }
+    .modal-hd h2 { font-size:16px; font-weight:700; }
+    .modal-hd .rba { font-family:monospace; font-size:12px; font-weight:700; color:var(--red); background:rgba(255,92,4,.12); padding:3px 9px; border-radius:4px; }
+    .modal-hd .close { background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; padding:0 4px; }
+    .modal-hd .close:hover { color:var(--text); }
+    .modal-bd { padding:18px 22px 22px; }
+    .d-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; }
+    .d-field { display:flex; flex-direction:column; gap:4px; }
+    .d-field.full { grid-column:1/-1; }
+    .d-key { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+    .d-val { font-size:13px; padding:7px 10px; background:var(--mid); border-radius:5px; border:1px solid var(--border); min-height:32px; }
+    .modal-sec { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--red); grid-column:1/-1; margin-top:4px; }
+    .tl { margin-top:16px; }
+    .tl-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--red); margin-bottom:10px; }
+    .tl-item { display:flex; gap:10px; margin-bottom:8px; }
+    .tl-dot { width:10px; height:10px; border-radius:50%; background:var(--red); margin-top:3px; flex-shrink:0; }
+    .tl-dot.old { background:var(--border); }
+    .tl-txt { font-size:12px; line-height:1.5; }
+    .tl-meta { font-size:11px; color:var(--muted); }
+    .update-bar {
+      display:flex; gap:8px; align-items:flex-end;
+      margin-top:16px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap;
+    }
+    .update-bar .ug { display:flex; flex-direction:column; gap:5px; }
+    .update-bar label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+    .update-bar select, .update-bar input {
+      background:var(--mid); border:1px solid var(--border); color:var(--text);
+      padding:8px 11px; border-radius:6px; font-size:13px; outline:none;
+    }
+    .update-bar select:focus, .update-bar input:focus { border-color:var(--red); }
+    .btn-upd {
+      background:var(--red); color:#fff; border:none;
+      padding:9px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;
+    }
+    .btn-upd:hover { background:var(--red-d); }
+    .modal-ft {
+      padding:14px 22px; border-top:1px solid var(--border);
+      display:flex; gap:8px; justify-content:flex-end;
+      flex-wrap: wrap;
+    }
+    .btn-del { background:rgba(255,92,4,.1); border:1px solid var(--red); color:var(--red); padding:8px 16px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
+    .btn-del:hover { background:var(--red); color:#fff; }
+    .btn-cls { background:var(--mid); border:1px solid var(--border); color:var(--text); padding:8px 18px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; }
+
+    /* ── TOAST ── */
+    .toast-wrap { position:fixed; bottom:20px; right:20px; z-index:999; display:flex; flex-direction:column; gap:8px; }
+    .toast { background:var(--green); color:#111; padding:11px 16px; border-radius:8px; font-size:13px; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.4); animation:tin .2s ease; }
+    .toast.err { background:var(--red); color:#fff; }
+    .toast.info { background:#2563eb; color:#fff; }
+    @keyframes tin { from{transform:translateX(50px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+    /* ── NOTIFICATION PANEL ── */
+    .notif-panel {
+      display:none;
+      position:absolute;
+      top:54px; right:0;
+      width:320px;
+      background:var(--dark);
+      border:1px solid var(--border);
+      border-radius:10px;
+      box-shadow:0 8px 32px rgba(0,0,0,.5);
+      z-index:300;
+      overflow:hidden;
+    }
+    .notif-panel.show { display:block; }
+    .notif-hd { padding:12px 16px; border-bottom:1px solid var(--border); font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:flex; justify-content:space-between; }
+    .notif-item { padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; }
+    .notif-item:hover { background:var(--mid); }
+    .notif-item:last-child { border-bottom:none; }
+    .notif-item .ni-num { font-family:monospace; font-size:12px; font-weight:700; color:var(--red); }
+    .notif-item .ni-name { font-size:13px; color:var(--text); margin:2px 0; }
+    .notif-item .ni-time { font-size:11px; color:var(--muted); }
+    .notif-empty { padding:20px; text-align:center; color:var(--muted); font-size:13px; }
+    .notif-clear { padding:10px 16px; text-align:center; border-top:1px solid var(--border); font-size:12px; color:var(--red); cursor:pointer; }
+    .notif-clear:hover { background:var(--mid); }
+    .bell-wrap { position:relative; }
+
+    @media(max-width:600px) {
+      .d-grid { grid-template-columns:1fr; }
+      .d-field.full { grid-column:1; }
+      .modal-sec { grid-column:1; }
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      .topbar, .tabs, .toolbar, #login-screen { display:none!important; }
+      body { background:#fff; color:#000; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="assets/dsd-logo.png" alt="DSD" style="height:52px;object-fit:contain;" />
+    </div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:13px;color:var(--muted);">Staff Portal · dsd.africa</div>
+    </div>
+    <h2>Sign in</h2>
+    <p>Use your DSD staff account credentials.</p>
+    <div class="login-group">
+      <label>Email Address</label>
+      <input id="lg-email" type="email" placeholder="you@dsd.africa" autocomplete="email" value="info@skcdigital.co.za" />
+    </div>
+    <div class="login-group">
+      <label>Password</label>
+      <input id="lg-pass" type="password" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="t-logo">
+      <img src="assets/dsd-logo.png" alt="DSD" style="height:38px;object-fit:contain;filter:brightness(0) invert(1);" />
+      <div>
+        <div class="name">RMA Dashboard</div>
+        <div class="sub">Data Storage Distribution</div>
+      </div>
+    </div>
+    <div class="t-right">
+      <span class="t-date" id="topDate"></span>
+      <div class="bell-wrap">
+        <button class="bell-btn" id="bellBtn" onclick="toggleNotifs()" title="Notifications">
+          🔔
+          <div class="bell-badge" id="bellBadge"></div>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-hd">
+            <span>New Submissions</span>
+            <span id="notif-count" style="color:var(--red);"></span>
+          </div>
+          <div id="notif-list"><div class="notif-empty">No new submissions</div></div>
+          <div class="notif-clear" onclick="clearNotifs()">Clear all</div>
+        </div>
+      </div>
+      <span class="user-chip" id="userChip">staff</span>
+      <a href="/" target="_blank" class="btn-new-rma" id="customerPortalBtn">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Customer Portal
+      </a>
+      <button class="btn-link" type="button" onclick="copyPublicLink('submit')">Copy Submit Link</button>
+      <button class="btn-link" type="button" onclick="copyPublicLink('track')">Copy Track Link</button>
+      <button class="btn-logout" onclick="doLogout()">Log out</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dash',this)">Dashboard</button>
+    <button class="tab" onclick="switchTab('all',this)">All Tickets</button>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div id="tab-dash">
+    <div class="container">
+      <div class="stats">
+        <div class="stat s-total">
+          <div class="stat-lbl">Total RMAs</div>
+          <div class="stat-val" id="s-total">0</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat s-entered">
+          <div class="stat-lbl">Entered</div>
+          <div class="stat-val" id="s-entered">0</div>
+          <div class="stat-sub">Awaiting collection</div>
+        </div>
+        <div class="stat s-active">
+          <div class="stat-lbl">In Progress</div>
+          <div class="stat-val" id="s-active">0</div>
+          <div class="stat-sub">Active repairs</div>
+        </div>
+        <div class="stat s-done">
+          <div class="stat-lbl">Resolved</div>
+          <div class="stat-val" id="s-done">0</div>
+          <div class="stat-sub">Completed</div>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:700;">Recent Submissions</span>
+          <button class="btn-sm" onclick="switchTab('all',document.querySelectorAll('.tab')[1])">View All</button>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>RMA #</th><th>Customer</th><th>Store</th><th>Brand / Product</th><th>Status</th><th>Received</th>
+            </tr></thead>
+            <tbody id="recent-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL TICKETS TAB -->
+  <div id="tab-all" style="display:none;">
+    <div class="container">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="searchQ" placeholder="Search RMA #, customer, brand…" oninput="renderAll()"/>
+        </div>
+        <select class="filter-sel" id="fStatus" onchange="renderAll()">
+          <option value="">All Statuses</option>
+          <option>Entered</option><option>Received</option><option>In Assessment</option>
+          <option>Awaiting Parts</option><option>In Repair</option><option>Quality Check</option>
+          <option>Ready for Collection</option><option>Returned to Client</option><option>Closed</option>
+        </select>
+        <button class="btn-sm" onclick="exportCSV()">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>Export CSV
+        </button>
+        <button class="btn-sm" onclick="window.print()">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>Print
+        </button>
+        <button class="btn-sm" onclick="loadTickets()">↻ Refresh</button>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>RMA #</th><th>Contact</th><th>Phone</th><th>Store</th>
+              <th>Brand / Serial</th><th>Status</th><th>Submitted</th><th>Technician</th>
+            </tr></thead>
+            <tbody id="all-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="result-count" id="res-count"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <h2 id="d-name">—</h2>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="d-sub">—</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="rba" id="d-rma">—</span>
+        <button class="close" onclick="closeModal()">×</button>
+      </div>
+    </div>
+    <div class="modal-bd">
+      <div class="d-grid">
+        <div class="modal-sec">Collection Details</div>
+        <div class="d-field"><div class="d-key">Contact Name</div><div class="d-val" id="d-cname"></div></div>
+        <div class="d-field"><div class="d-key">Contact Number</div><div class="d-val" id="d-cnum"></div></div>
+        <div class="d-field"><div class="d-key">Alternative Contact</div><div class="d-val" id="d-alt"></div></div>
+        <div class="d-field"><div class="d-key">Email</div><div class="d-val" id="d-email"></div></div>
+
+        <div class="modal-sec">Collection Address</div>
+        <div class="d-field"><div class="d-key">Store / Company</div><div class="d-val" id="d-store"></div></div>
+        <div class="d-field full"><div class="d-key">Address</div><div class="d-val" id="d-addr"></div></div>
+
+        <div class="modal-sec">Product &amp; Invoice</div>
+        <div class="d-field"><div class="d-key">Brand</div><div class="d-val" id="d-brand"></div></div>
+        <div class="d-field"><div class="d-key">Serial / Invoice No.</div><div class="d-val" id="d-serial"></div></div>
+        <div class="d-field"><div class="d-key">Purchase Date</div><div class="d-val" id="d-pdate"></div></div>
+        <div class="d-field"><div class="d-key">Proof of Purchase</div><div class="d-val" id="d-pop"></div></div>
+        <div class="d-field full"><div class="d-key">Fault Description</div><div class="d-val" id="d-fault" style="white-space:pre-wrap;"></div></div>
+
+        <div class="modal-sec">Processing</div>
+        <div class="d-field"><div class="d-key">Status</div><div class="d-val" id="d-status"></div></div>
+        <div class="d-field"><div class="d-key">Technician</div><div class="d-val" id="d-tech"></div></div>
+        <div class="d-field full"><div class="d-key">Internal Notes</div><div class="d-val" id="d-notes" style="white-space:pre-wrap;"></div></div>
+        <div class="modal-sec">Attachments</div>
+        <div class="d-field full"><div id="d-attachments" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;"></div></div>
+      </div>
+
+      <div class="tl">
+        <div class="tl-title">Activity Log</div>
+        <div id="d-tl"></div>
+      </div>
+
+      <div class="update-bar">
+        <div class="ug" style="flex:1;min-width:130px;">
+          <label>Update Status</label>
+          <select id="upd-status">
+            <option>Entered</option><option>Received</option><option>In Assessment</option>
+            <option>Awaiting Parts</option><option>In Repair</option><option>Quality Check</option>
+            <option>Ready for Collection</option><option>Returned to Client</option><option>Closed</option>
+          </select>
+        </div>
+        <div class="ug" style="flex:1;min-width:130px;">
+          <label>Technician</label>
+          <input id="upd-tech" placeholder="Assign technician" />
+        </div>
+        <div class="ug" style="flex:2;min-width:160px;">
+          <label>Note</label>
+          <input id="upd-note" placeholder="Add a note (optional)…" />
+        </div>
+        <button class="btn-upd" onclick="saveUpdate()">Update</button>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-cls" onclick="openCustomerTracking()">Open Tracking Page</button>
+      <button class="btn-cls" onclick="copyTicketTrackingLink()">Copy Tracking Link</button>
+      <button class="btn-del" onclick="deleteTicket()">Delete</button>
+      <button class="btn-cls" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://abucbojsosfxdaufdapw.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidWNib2pzb3NmeGRhdWZkYXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2Mjg4NTUsImV4cCI6MjA5MzIwNDg1NX0.IjswX2er9SYno_2l-c3IPuuT8o5PCxtP2Ms3EaECm1E';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let tickets  = [];
+let viewId   = null;
+let newNotifs = [];
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('lg-email').value.trim();
+  const pass  = document.getElementById('lg-pass').value;
+  const btn   = document.getElementById('loginBtn');
+  const err   = document.getElementById('login-error');
+  if (!email || !pass) { err.textContent = 'Please enter your email and password.'; return; }
+  btn.textContent = 'Signing in…'; btn.disabled = true; err.textContent = '';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.textContent = error.message || 'Login failed. Check your credentials.';
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  } else {
+    showApp(data.user);
+  }
+}
+async function doLogout() {
+  await sb.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('loginBtn').textContent = 'Sign In';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('lg-pass').value = '';
+}
+async function checkSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) showApp(session.user);
+}
+function showApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('userChip').textContent = user.email.split('@')[0];
+  setDate();
+  loadTickets();
+  subscribeRealtime();
+  requestNotifPermission();
+}
+
+// ── DATE ──────────────────────────────────────────────────────────────────
+function setDate() {
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+function getPublicPageUrl(page, params) {
+  const isWeb = /^https?:$/i.test(location.protocol);
+  const target = isWeb ? page : `${page}.html`;
+  const url = new URL(target, location.href);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+    });
+  }
+  return url.toString();
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const input = document.createElement('textarea');
+  input.value = text;
+  input.setAttribute('readonly', '');
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.select();
+  const copied = document.execCommand('copy');
+  document.body.removeChild(input);
+  if (!copied) throw new Error('Copy failed');
+}
+
+async function copyPublicLink(page) {
+  try {
+    await copyText(getPublicPageUrl(page));
+    toast(`${page === 'submit' ? 'Submit' : 'Track'} link copied.`);
+  } catch (error) {
+    console.error(error);
+    toast('Could not copy link.', true);
+  }
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-dash').style.display = name === 'dash' ? '' : 'none';
+  document.getElementById('tab-all').style.display  = name === 'all'  ? '' : 'none';
+  if (name === 'dash') renderDash();
+  if (name === 'all')  renderAll();
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────
+async function loadTickets() {
+  const { data, error } = await sb.from('rma_tickets')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { toast('Failed to load tickets', true); return; }
+  tickets = data || [];
+  renderDash();
+  renderAll();
+}
+
+// ── REALTIME ──────────────────────────────────────────────────────────────
+function subscribeRealtime() {
+  sb.channel('rma-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rma_tickets' }, payload => {
+      tickets.unshift(payload.new);
+      newNotifs.unshift(payload.new);
+      renderDash(); renderAll(); updateBell();
+      toast(`📋 New RMA: ${payload.new.rma_number} — ${payload.new.contact_name}`, false, true);
+      if (Notification.permission === 'granted') {
+        new Notification('New RMA Submission — DSD', {
+          body: `${payload.new.rma_number} · ${payload.new.contact_name} · ${payload.new.brand}`,
+          icon: ''
+        });
+      }
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rma_tickets' }, payload => {
+      const idx = tickets.findIndex(t => t.id === payload.new.id);
+      if (idx > -1) tickets[idx] = payload.new;
+      renderDash(); renderAll();
+    })
+    .subscribe();
+}
+function requestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+// ── BELL ──────────────────────────────────────────────────────────────────
+function updateBell() {
+  const badge = document.getElementById('bellBadge');
+  const count = document.getElementById('notif-count');
+  if (newNotifs.length > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = newNotifs.length;
+    count.textContent = newNotifs.length + ' new';
+  } else {
+    badge.style.display = 'none';
+    count.textContent = '';
+  }
+  const list = document.getElementById('notif-list');
+  if (!newNotifs.length) {
+    list.innerHTML = '<div class="notif-empty">No new submissions</div>';
+    return;
+  }
+  list.innerHTML = newNotifs.map(t => `
+    <div class="notif-item" onclick="openDetail('${t.id}');toggleNotifs()">
+      <div class="ni-num">${t.rma_number}</div>
+      <div class="ni-name">${esc(t.contact_name)} · ${esc(t.brand)}</div>
+      <div class="ni-time">${fmtDT(t.created_at)}</div>
+    </div>`).join('');
+}
+function toggleNotifs() {
+  document.getElementById('notifPanel').classList.toggle('show');
+}
+function clearNotifs() {
+  newNotifs = [];
+  updateBell();
+  document.getElementById('notifPanel').classList.remove('show');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('bellBtn').contains(e.target))
+    document.getElementById('notifPanel').classList.remove('show');
+});
+
+// ── STATUS BADGE ──────────────────────────────────────────────────────────
+const BADGE_CLASS = {
+  'Entered':'b-entered','Received':'b-received','In Assessment':'b-assess',
+  'Awaiting Parts':'b-awaiting','In Repair':'b-repair','Quality Check':'b-qc',
+  'Ready for Collection':'b-ready','Returned to Client':'b-returned','Closed':'b-closed'
+};
+function badge(s){ return `<span class="badge ${BADGE_CLASS[s]||'b-closed'}">${s}</span>`; }
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+function renderDash() {
+  const entered  = tickets.filter(t => t.status === 'Entered').length;
+  const active   = tickets.filter(t => ['Received','In Assessment','Awaiting Parts','In Repair','Quality Check'].includes(t.status)).length;
+  const done     = tickets.filter(t => ['Ready for Collection','Returned to Client','Closed'].includes(t.status)).length;
+  document.getElementById('s-total').textContent   = tickets.length;
+  document.getElementById('s-entered').textContent = entered;
+  document.getElementById('s-active').textContent  = active;
+  document.getElementById('s-done').textContent    = done;
+  const recent = tickets.slice(0, 8);
+  const tbody = document.getElementById('recent-body');
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="ico">📋</div><p>No RMA tickets yet.<br>Share the <a href="${getPublicPageUrl('submit')}" target="_blank" style="color:var(--red);">customer form</a> to get started.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recent.map(t => `
+    <tr onclick="openDetail('${t.id}')">
+      <td class="rma-n">${t.rma_number||'—'}</td>
+      <td>${esc(t.contact_name)}</td>
+      <td>${esc(t.store_name||'—')}</td>
+      <td>${esc(t.brand)}</td>
+      <td>${badge(t.status)}</td>
+      <td>${fmtDate(t.created_at)}</td>
+    </tr>`).join('');
+}
+
+// ── ALL TICKETS ───────────────────────────────────────────────────────────
+function renderAll() {
+  const q  = (document.getElementById('searchQ').value||'').toLowerCase();
+  const sf = document.getElementById('fStatus').value;
+  let list = [...tickets];
+  if (q)  list = list.filter(t =>
+    (t.rma_number||'').toLowerCase().includes(q) ||
+    t.contact_name.toLowerCase().includes(q) ||
+    (t.store_name||'').toLowerCase().includes(q) ||
+    t.brand.toLowerCase().includes(q) ||
+    (t.serial_invoice_no||'').toLowerCase().includes(q));
+  if (sf) list = list.filter(t => t.status === sf);
+  document.getElementById('res-count').textContent = `Showing ${list.length} of ${tickets.length} tickets`;
+  const tbody = document.getElementById('all-body');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ico">🔍</div><p>${tickets.length?'No tickets match your filters.':'No tickets yet.'}</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(t => `
+    <tr onclick="openDetail('${t.id}')">
+      <td class="rma-n">${t.rma_number||'—'}</td>
+      <td>${esc(t.contact_name)}</td>
+      <td>${esc(t.contact_number||'—')}</td>
+      <td>${esc(t.store_name||'—')}</td>
+      <td>${esc(t.brand)} · <span style="font-family:monospace;font-size:11px;">${esc(t.serial_invoice_no)}</span></td>
+      <td>${badge(t.status)}</td>
+      <td>${fmtDate(t.created_at)}</td>
+      <td>${esc(t.technician||'—')}</td>
+    </tr>`).join('');
+}
+
+// ── DETAIL ────────────────────────────────────────────────────────────────
+async function openDetail(id) {
+  viewId = id;
+  const t = tickets.find(x => x.id === id);
+  if (!t) return;
+  set('d-name', t.contact_name);
+  set('d-sub',  `${t.brand} · ${t.serial_invoice_no}`);
+  set('d-rma',  t.rma_number||'—');
+  set('d-cname', t.contact_name);
+  set('d-cnum',  t.contact_number);
+  set('d-alt',   t.alternative_contact||'—');
+  set('d-email', t.customer_email||'—');
+  set('d-store', t.store_name||'—');
+  set('d-addr',  [t.street_address,t.suburb,t.city,t.postal_code].filter(Boolean).join(', '));
+  set('d-brand', t.brand);
+  set('d-serial',t.serial_invoice_no);
+  set('d-pdate', t.purchase_date ? fmtDate(t.purchase_date) : '—');
+  document.getElementById('d-pop').innerHTML = t.proof_of_purchase
+    ? '<span class="w-yes">✔ Yes</span>' : '<span class="w-no">✘ No</span>';
+  set('d-fault', t.fault_description);
+  document.getElementById('d-status').innerHTML = badge(t.status);
+  set('d-tech',  t.technician||'—');
+  set('d-notes', t.internal_notes||'—');
+  document.getElementById('upd-status').value = t.status;
+  document.getElementById('upd-tech').value   = t.technician||'';
+  document.getElementById('upd-note').value   = '';
+
+  // Attachments
+  const attEl = document.getElementById('d-attachments');
+  const atts = Array.isArray(t.attachments) ? t.attachments : [];
+  if (!atts.length) {
+    attEl.innerHTML = '<span style="font-size:12px;color:var(--muted);">No attachments</span>';
+  } else {
+    attEl.innerHTML = atts.map(a => {
+      const isImg = a.type && a.type.startsWith('image/');
+      return `<a href="${a.url}" target="_blank" title="${esc(a.name)}" style="display:inline-block;border:1px solid var(--border);border-radius:6px;overflow:hidden;width:72px;height:72px;background:var(--mid);text-decoration:none;">
+        ${isImg
+          ? `<img src="${a.url}" style="width:100%;height:100%;object-fit:cover;" alt="${esc(a.name)}">`
+          : `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;"><span style="font-size:22px;">📄</span><span style="font-size:9px;color:var(--muted);padding:0 4px;text-align:center;word-break:break-all;">${esc(a.name)}</span></div>`}
+      </a>`;
+    }).join('');
+  }
+
+  // Load activity log
+  const { data: log } = await sb.from('rma_ticket_log')
+    .select('*').eq('rma_ticket_id', id).order('created_at', { ascending: false });
+  const tlEl = document.getElementById('d-tl');
+  if (!log || !log.length) {
+    tlEl.innerHTML = '<div style="font-size:12px;color:var(--muted);">No activity yet.</div>';
+  } else {
+    tlEl.innerHTML = log.map((e,i) => `
+      <div class="tl-item">
+        <div class="tl-dot ${i>0?'old':''}"></div>
+        <div class="tl-txt">
+          <strong>${esc(e.status)}</strong>${e.note ? ' — '+esc(e.note):''}
+          <div class="tl-meta">${fmtDT(e.created_at)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+async function saveUpdate() {
+  const t = tickets.find(x => x.id === viewId);
+  if (!t) return;
+  const newStatus = document.getElementById('upd-status').value;
+  const tech      = document.getElementById('upd-tech').value.trim();
+  const note      = document.getElementById('upd-note').value.trim();
+  const { error } = await sb.from('rma_tickets').update({
+    status: newStatus,
+    technician: tech || null,
+    updated_at: new Date().toISOString()
+  }).eq('id', viewId);
+  if (error) { toast('Update failed', true); return; }
+  await sb.from('rma_ticket_log').insert({ rma_ticket_id: viewId, status: newStatus, note: note||null });
+  // Refresh local
+  t.status = newStatus; t.technician = tech;
+  toast('Status updated → ' + newStatus);
+  openDetail(viewId); // refresh modal
+}
+
+async function deleteTicket() {
+  if (!confirm('Delete this RMA ticket? This cannot be undone.')) return;
+  const { error } = await sb.from('rma_tickets').delete().eq('id', viewId);
+  if (error) { toast('Delete failed', true); return; }
+  tickets = tickets.filter(x => x.id !== viewId);
+  closeModal(); renderDash(); renderAll();
+  toast('Ticket deleted.');
+}
+
+function getTicketTrackingUrl() {
+  const ticket = tickets.find(x => x.id === viewId);
+  if (!ticket || !ticket.rma_number) return '';
+  return getPublicPageUrl('track', { rma: ticket.rma_number });
+}
+
+function openCustomerTracking() {
+  const url = getTicketTrackingUrl();
+  if (!url) { toast('Tracking link unavailable.', true); return; }
+  window.open(url, '_blank', 'noopener');
+}
+
+async function copyTicketTrackingLink() {
+  const url = getTicketTrackingUrl();
+  if (!url) { toast('Tracking link unavailable.', true); return; }
+  try {
+    await copyText(url);
+    toast('Tracking link copied.');
+  } catch (error) {
+    console.error(error);
+    toast('Could not copy tracking link.', true);
+  }
+}
+
+function closeModal() {
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+document.getElementById('detailOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('detailOverlay')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── EXPORT CSV ────────────────────────────────────────────────────────────
+function exportCSV() {
+  const cols = ['RMA #','Contact Name','Phone','Email','Store','Street','Suburb','City','Postal','Brand','Serial/Invoice','Status','Technician','Purchase Date','Proof of Purchase','Submitted','Fault Description'];
+  const rows = tickets.map(t => [
+    t.rma_number||'', t.contact_name, t.contact_number||'', t.customer_email||'',
+    t.store_name||'', t.street_address||'', t.suburb||'', t.city||'', t.postal_code||'',
+    t.brand, t.serial_invoice_no, t.status, t.technician||'',
+    t.purchase_date||'', t.proof_of_purchase?'Yes':'No',
+    t.created_at ? new Date(t.created_at).toLocaleDateString('en-ZA') : '',
+    t.fault_description
+  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent([cols.join(','),...rows].join('\n'));
+  a.download = `DSD_RMA_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v||'—'; }
+function fmtDate(d){ if(!d)return'—'; const x=new Date(d); return x.toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDT(d){ if(!d)return''; const x=new Date(d); return x.toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})+' '+x.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}); }
+function toast(msg, err=false, info=false){
+  const w=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className='toast'+(err?' err':info?' info':'');
+  el.textContent=msg;
+  w.appendChild(el);
+  setTimeout(()=>el.remove(),4000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.getElementById('customerPortalBtn').href = '/';
+checkSession();
+</script>
+</body>
+</html>

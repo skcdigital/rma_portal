@@ -12,10 +12,9 @@
     }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/customer.html" },
-    { "source": "/customer", "destination": "/customer.html" },
+    { "source": "/customer", "destination": "/index.html" },
     { "source": "/submit", "destination": "/submit.html" },
     { "source": "/track", "destination": "/track.html" },
-    { "source": "/staff", "destination": "/index.html" }
+    { "source": "/staff", "destination": "/staff.html" }
   ]
 }
