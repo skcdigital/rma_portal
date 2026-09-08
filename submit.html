@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DSD – RMA Request Form</title>
+  <style>
+    :root {
+      --orange:  #ff5c04;
+      --orange-d:#e04e00;
+      --blue:    #414aae;
+      --navy:    #003467;
+      --dark:    #0d1a2e;
+      --text:    #1a2030;
+      --muted:   #5f7080;
+      --border:  #dde3ed;
+      --bg:      #f0f4f9;
+      --card:    #ffffff;
+      --green:   #16a34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--navy);
+      border-bottom: 4px solid var(--orange);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logo { height: 52px; object-fit: contain; }
+    .header-right { text-align: right; }
+    .header-right .title { font-size: 16px; font-weight: 700; color: #fff; }
+    .header-right .sub   { font-size: 11px; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+
+    /* ── PAGE ── */
+    .page { max-width: 740px; margin: 0 auto; padding: 32px 20px 60px; }
+    .intro {
+      background: var(--card);
+      border-left: 4px solid var(--orange);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .intro strong { color: var(--text); }
+
+    /* ── FORM CARD ── */
+    .form-card { background: var(--card); border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); overflow: hidden; margin-bottom: 18px; }
+    .section-head {
+      background: var(--navy);
+      color: #fff;
+      padding: 13px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-num {
+      background: var(--orange);
+      color: #fff;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .section-title { font-size: 14px; font-weight: 700; letter-spacing: .3px; }
+    .section-body { padding: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1/-1; }
+    label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+    label .req { color: var(--orange); margin-left: 2px; }
+    input, select, textarea {
+      border: 1.5px solid var(--border);
+      color: var(--text); background: #fff;
+      padding: 10px 12px; border-radius: 6px;
+      font-size: 14px; font-family: inherit; outline: none;
+      transition: border-color .15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--orange); }
+    input::placeholder, textarea::placeholder { color: #c0c8d8; }
+    textarea { resize: vertical; min-height: 90px; }
+    .radio-group { display: flex; gap: 20px; padding-top: 4px; }
+    .radio-group label { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text); cursor: pointer; }
+    .radio-group input[type=radio] { width: 16px; height: 16px; accent-color: var(--orange); margin: 0; }
+    .field-error { font-size: 11px; color: #dc2626; margin-top: 3px; }
+    input.invalid, select.invalid, textarea.invalid { border-color: #dc2626; }
+
+    /* ── ATTACHMENT UPLOAD ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #f8fafc;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--orange); background: #fff5f0; }
+    .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-icon {
+      width: 54px; height: 54px; margin: 0 auto 10px;
+      border-radius: 14px; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      background: #fff; color: var(--navy); font-size: 12px; font-weight: 800; letter-spacing: 1px;
+    }
+    .drop-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .drop-sub   { font-size: 12px; color: var(--muted); }
+    .drop-sub span { color: var(--orange); font-weight: 600; }
+    .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 10px; margin-top: 14px; }
+    .preview-item { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: #f0f4f9; border: 1px solid var(--border); }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-item .file-icon { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .preview-item .file-icon .fi-ico { font-size: 28px; }
+    .preview-item .file-icon .fi-name { font-size: 9px; color: var(--muted); text-align: center; padding: 0 4px; word-break: break-all; }
+    .preview-item .remove-btn {
+      position: absolute; top: 3px; right: 3px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,.6); color: #fff;
+      border: none; cursor: pointer; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer {
+      background: #fffbf0; border: 1px solid #f0d060;
+      border-radius: 8px; padding: 14px 16px;
+      font-size: 12px; color: #665500; line-height: 1.6; margin-bottom: 18px;
+    }
+    .disclaimer strong { color: #443300; }
+
+    /* ── SUBMIT ── */
+    .submit-wrap { text-align: center; }
+    .btn-submit {
+      background: var(--orange); color: #fff; border: none;
+      padding: 14px 52px; border-radius: 8px; font-size: 16px;
+      font-weight: 700; cursor: pointer; transition: background .15s; min-width: 220px;
+    }
+    .btn-submit:hover { background: var(--orange-d); }
+    .btn-submit:disabled { background: #bbb; cursor: not-allowed; }
+    #submit-error { color: #dc2626; font-size: 13px; margin-top: 10px; }
+
+    /* ── PROGRESS ── */
+    .upload-progress { margin-top: 12px; display: none; }
+    .progress-bar-wrap { background: #e8edf5; border-radius: 6px; height: 8px; overflow: hidden; margin: 6px 0; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--orange)); border-radius: 6px; transition: width .3s; }
+    .progress-label { font-size: 12px; color: var(--muted); }
+
+    /* ── SUCCESS ── */
+    #success-screen { display: none; text-align: center; padding: 50px 20px; }
+    .success-icon {
+      width: 76px; height: 76px; background: #fff; border: 2px solid var(--green);
+      color: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 13px; font-weight: 800; letter-spacing: 1px;
+    }
+    .rma-result-num {
+      font-family: monospace; font-size: 26px; font-weight: 900;
+      color: var(--orange); background: #fff5f0;
+      border: 2px solid var(--orange); border-radius: 10px;
+      padding: 14px 28px; display: inline-block; margin: 14px 0 22px; letter-spacing: 2px;
+    }
+    .success-info { background: var(--card); border-radius: 10px; padding: 22px; max-width: 500px; margin: 0 auto 22px; text-align: left; border: 1px solid var(--border); }
+    .success-info h4 { font-size: 13px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    .btn-pdf {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--navy); color: #fff; border: none;
+      padding: 13px 28px; border-radius: 8px; font-size: 14px;
+      font-weight: 700; cursor: pointer; margin-bottom: 12px;
+      text-decoration: none; transition: background .15s;
+    }
+    .btn-pdf:hover { background: #002255; }
+    .track-link { display: block; background: var(--blue); color: #fff; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 12px; }
+    .success-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .btn-share {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: #eef3fb; color: var(--navy); border: 1px solid var(--border);
+      padding: 12px 18px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .btn-share:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-another { background: none; border: 2px solid var(--orange); color: var(--orange); padding: 11px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .btn-another:hover { background: var(--orange); color: #fff; }
+
+    /* ── FOOTER ── */
+    .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 32px; }
+    .footer a { color: var(--orange); text-decoration: none; }
+
+    /* ── SPINNER ── */
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 560px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .header { padding: 12px 16px; }
+      .header-logo { height: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <img src="assets/dsd-logo.png" alt="DSD – Data Storage Distribution" class="header-logo" />
+  <div class="header-right">
+    <div class="title">Return Merchandise Authorisation</div>
+    <div class="sub">Submit a new RMA request online</div>
+  </div>
+</header>
+
+<!-- FORM PAGE -->
+<div class="page" id="form-page">
+
+  <div class="intro">
+    <strong>Dear Valued Customer,</strong><br>
+    Please complete the form below for your RMA request. All fields marked
+    <span style="color:var(--orange);font-weight:700;">*</span> are required. Upon submission
+    you will receive your <strong>RMA number</strong> and a
+    <strong>filled PDF copy</strong> of this form for your records.
+  </div>
+
+  <form id="rmaForm" novalidate>
+
+    <!-- SECTION 1 -->
+    <div class="form-card">
+      <div class="section-head"><div class="section-num">1</div><div class="section-title">Collection Details</div></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Contact Name <span class="req">*</span></label>
+            <input id="f-cname" placeholder="Full name" />
+          </div>
+          <div class="form-group">
+            <label>Contact Number <span class="req">*</span></label>
+            <input id="f-cnum" placeholder="+27 000 000 0000" />
+          </div>
+          <div class="form-group">
+            <label>Alternative Contact</label>
+            <input id="f-alt" placeholder="Alternative phone or name" />
+          </div>
+          <div class="form-group">
+            <label>Email Address <span class="req">*</span></label>
+            <input id="f-email" type="email" placeholder="your@email.com" />
+            <div class="field-error" id="err-email"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="form-card">
+      <div class="section-head"><div class="section-num">2</div><div class="section-title">Collection Address</div></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Store / Company Name</label>
+            <input id="f-store" placeholder="Store or business name" />
+          </div>
+          <div class="form-group full">
+            <label>Street Address <span class="req">*</span></label>
+            <input id="f-street" placeholder="Street number and name" />
+          </div>
+          <div class="form-group">
+            <label>Suburb <span class="req">*</span></label>
+            <input id="f-suburb" placeholder="Suburb" />
+          </div>
+          <div class="form-group">
+            <label>City <span class="req">*</span></label>
+            <input id="f-city" placeholder="City" />
+          </div>
+          <div class="form-group">
+            <label>Postal Code <span class="req">*</span></label>
+            <input id="f-postal" placeholder="e.g. 2000" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="form-card">
+      <div class="section-head"><div class="section-num">3</div><div class="section-title">Product &amp; Invoice Details</div></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Brand <span class="req">*</span></label>
+            <input id="f-brand" placeholder="e.g. Lexar, Seagate, Samsung" />
+          </div>
+          <div class="form-group">
+            <label>Serial / Invoice No. <span class="req">*</span></label>
+            <input id="f-serial" placeholder="Serial number or DSD invoice no." />
+          </div>
+          <div class="form-group">
+            <label>Purchase Date</label>
+            <input id="f-purchdate" type="date" />
+          </div>
+          <div class="form-group">
+            <label>Proof of Purchase Attached</label>
+            <div class="radio-group">
+              <label><input type="radio" name="pop" value="yes" /> Yes</label>
+              <label><input type="radio" name="pop" value="no" checked /> No</label>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Fault Description <span class="req">*</span></label>
+            <textarea id="f-fault" placeholder="Please describe the fault or issue in detail…"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 — ATTACHMENTS -->
+    <div class="form-card">
+      <div class="section-head"><div class="section-num">4</div><div class="section-title">Supporting Images &amp; Documents</div></div>
+      <div class="section-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+          Attach photos of the fault, proof of purchase, or any supporting documents.
+          Up to <strong>5 files</strong>, max 10 MB each.
+        </p>
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" onchange="handleFiles(this.files)" />
+          <div class="drop-icon">FILES</div>
+          <div class="drop-title">Drag &amp; drop files here</div>
+          <div class="drop-sub">or <span>browse to upload</span> · JPG, PNG, PDF · max 10 MB each</div>
+        </div>
+        <div class="preview-grid" id="previewGrid"></div>
+        <div class="upload-progress" id="uploadProgress">
+          <div class="progress-label" id="progressLabel">Uploading attachments…</div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>By submitting this form, you confirm</strong> that all information provided is accurate
+      and you accept the terms and conditions of the DSD RMA process.
+      Collections are scheduled for the <strong>beginning of each new month</strong>.
+      Additional returns before the scheduled date: email
+      <a href="mailto:rma@dsd.africa" style="color:#aa7700;">rma@dsd.africa</a>.
+    </div>
+
+    <div class="submit-wrap">
+      <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">
+        Submit RMA Request
+      </button>
+      <div id="submit-error"></div>
+    </div>
+  </form>
+</div>
+
+<!-- SUCCESS PAGE -->
+<div class="page" id="success-screen">
+  <div class="success-icon">DONE</div>
+  <h2 style="font-size:24px;font-weight:800;">RMA Submitted Successfully</h2>
+  <p style="color:var(--muted);margin-top:8px;font-size:14px;">Your RMA reference number is:</p>
+  <div class="rma-result-num" id="result-rma-num">—</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Please save or print your PDF — quote this number in all correspondence with DSD.</p>
+
+  <button class="btn-pdf" id="downloadPdfBtn" onclick="triggerPdfDownload()">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+    Download PDF Copy
+  </button>
+
+  <div class="success-info">
+    <h4>What happens next?</h4>
+    <ol style="padding-left:18px;font-size:13px;line-height:1.9;color:#444;">
+      <li>DSD will log your return in the system.</li>
+      <li>A courier collection will be arranged for the next monthly run.</li>
+      <li>Once received, your ticket moves from <strong>Entered → Received</strong>.</li>
+      <li>Track your status anytime using the link below.</li>
+    </ol>
+    <a class="track-link" id="track-link-btn" href="#">Track this RMA online</a>
+     <div class="success-actions">
+       <button class="btn-share" type="button" onclick="copyTrackingLink()">Copy Tracking Link</button>
+       <button class="btn-share" type="button" onclick="copySubmitLink()">Copy Submit Form Link</button>
+     </div>
+  </div>
+
+  <button class="btn-another" onclick="resetForm()">Submit Another RMA</button>
+</div>
+
+<footer class="footer">
+  <a href="https://www.dsd.africa">dsd.africa</a> &nbsp;·&nbsp;
+  RMA queries: <a href="mailto:rma@dsd.africa">rma@dsd.africa</a>
+  &nbsp;·&nbsp; © 2026 Data Storage Distribution
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+// Email notifications (customer confirmation + staff alert) are sent
+// server-side by the notify-rma Supabase Edge Function, triggered
+// automatically on insert to rma_tickets. No client-side email code needed.
+
+const SUPA_URL = 'https://abucbojsosfxdaufdapw.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidWNib2pzb3NmeGRhdWZkYXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2Mjg4NTUsImV4cCI6MjA5MzIwNDg1NX0.IjswX2er9SYno_2l-c3IPuuT8o5PCxtP2Ms3EaECm1E';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── Pre-load logo for PDF (Image element works on file:// AND http://) ────
+let LOGO_B64 = null;
+(function () {
+  const img = new Image();
+  img.onload = function () {
+    try {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      LOGO_B64 = c.toDataURL('image/png');
+    } catch (e) { /* canvas taint on file:// — logo skipped in PDF */ }
+  };
+  img.src = 'assets/dsd-logo.png';
+}());
+
+// ── File management ────────────────────────────────────────────────────────
+let selectedFiles = [];
+let currentTicket = null;
+
+function handleFiles(files) {
+  const MAX = 5;
+  const existing = selectedFiles.length;
+  Array.from(files).slice(0, MAX - existing).forEach(f => {
+    if (f.size > 10 * 1024 * 1024) { alert(`"${f.name}" exceeds 10 MB and was skipped.`); return; }
+    selectedFiles.push(f);
+  });
+  renderPreviews();
+}
+function renderPreviews() {
+  const grid = document.getElementById('previewGrid');
+  grid.innerHTML = selectedFiles.map((f, i) => {
+    const isImg = f.type.startsWith('image/');
+    const url = isImg ? URL.createObjectURL(f) : null;
+    return `<div class="preview-item">
+      ${isImg
+        ? `<img src="${url}" alt="${f.name}">`
+        : `<div class="file-icon"><div class="fi-ico">📄</div><div class="fi-name">${f.name}</div></div>`}
+      <button class="remove-btn" onclick="removeFile(${i})" type="button">×</button>
+    </div>`;
+  }).join('');
+}
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  renderPreviews();
+}
+
+// Drag and drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+
+// ── Validation ─────────────────────────────────────────────────────────────
+function v(id) { return (document.getElementById(id)?.value?.trim()) || ''; }
+function clearErrors() {
+  document.querySelectorAll('.invalid').forEach(e => e.classList.remove('invalid'));
+  document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
+  document.getElementById('submit-error').textContent = '';
+}
+function markInvalid(id, msg) {
+  document.getElementById(id)?.classList.add('invalid');
+  const err = document.getElementById('err-' + id.replace('f-',''));
+  if (err) err.textContent = msg;
+}
+
+// ── Upload attachments ─────────────────────────────────────────────────────
+async function uploadAttachments(rmaNum) {
+  if (!selectedFiles.length) return [];
+  const wrap = document.getElementById('uploadProgress');
+  const fill = document.getElementById('progressFill');
+  const lbl  = document.getElementById('progressLabel');
+  wrap.style.display = 'block';
+  const urls = [];
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const f = selectedFiles[i];
+    lbl.textContent = `Uploading ${i+1} of ${selectedFiles.length}: ${f.name}`;
+    fill.style.width = `${((i) / selectedFiles.length) * 100}%`;
+    const path = `${rmaNum}/${Date.now()}_${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const { data, error } = await sb.storage.from('rma-attachments').upload(path, f, { upsert: true });
+    if (!error) {
+      const { data: pub } = sb.storage.from('rma-attachments').getPublicUrl(data.path);
+      urls.push({ name: f.name, url: pub.publicUrl, type: f.type });
+    }
+    fill.style.width = `${((i+1) / selectedFiles.length) * 100}%`;
+  }
+  lbl.textContent = `${urls.length} file(s) uploaded ✓`;
+  return urls;
+}
+
+// ── Submit ─────────────────────────────────────────────────────────────────
+async function submitForm() {
+  clearErrors();
+  let ok = true;
+  [['f-cname','Contact name is required'],['f-cnum','Contact number is required'],
+   ['f-email','Email address is required'],['f-street','Street address is required'],
+   ['f-suburb','Suburb is required'],['f-city','City is required'],
+   ['f-postal','Postal code is required'],['f-brand','Brand is required'],
+   ['f-serial','Serial / Invoice number is required'],['f-fault','Fault description is required']
+  ].forEach(([id, msg]) => { if (!v(id)) { markInvalid(id, msg); ok = false; } });
+  const email = v('f-email');
+  if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { markInvalid('f-email', 'Enter a valid email'); ok = false; }
+  if (!ok) { document.getElementById('submit-error').textContent = 'Please fill in all required fields.'; return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.innerHTML = '<span class="spinner"></span>Submitting…'; btn.disabled = true;
+
+  // Build initial payload (no rma_number yet — DB generates it)
+  const payload = {
+    contact_name: v('f-cname'), contact_number: v('f-cnum'),
+    alternative_contact: v('f-alt') || null, customer_email: email || null,
+    store_name: v('f-store') || null, street_address: v('f-street'),
+    suburb: v('f-suburb'), city: v('f-city'), postal_code: v('f-postal'),
+    brand: v('f-brand'), serial_invoice_no: v('f-serial'),
+    fault_description: v('f-fault'),
+    purchase_date: v('f-purchdate') || null,
+    proof_of_purchase: document.querySelector('input[name=pop]:checked')?.value === 'yes',
+    status: 'Entered', attachments: []
+  };
+
+  try {
+    // Insert ticket first to get the generated rma_number
+    const { data, error } = await sb.from('rma_tickets').insert(payload).select().single();
+    if (error) throw error;
+
+    // Upload attachments using the generated rma_number
+    const attachUrls = await uploadAttachments(data.rma_number);
+
+    // Update ticket with attachment URLs if any
+    if (attachUrls.length) {
+      await sb.from('rma_tickets').update({ attachments: attachUrls }).eq('id', data.id);
+    }
+
+    // Insert initial log entry
+    await sb.from('rma_ticket_log').insert({
+      rma_ticket_id: data.id, status: 'Entered',
+      note: `Ticket submitted via online portal${attachUrls.length ? ` with ${attachUrls.length} attachment(s)` : ''}`
+    });
+
+    currentTicket = { ...data, attachments: attachUrls };
+
+    showSuccess(data.rma_number);
+  } catch(err) {
+    console.error(err);
+    document.getElementById('submit-error').textContent = 'Submission failed. Please try again or email rma@dsd.africa.';
+    btn.innerHTML = 'Submit RMA Request'; btn.disabled = false;
+  }
+}
+
+// ── Success screen ─────────────────────────────────────────────────────────
+function showSuccess(rmaNum) {
+  document.getElementById('form-page').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+  document.getElementById('result-rma-num').textContent = rmaNum;
+  const trackUrl = getPublicPageUrl('track', { rma: rmaNum });
+  const tl = document.getElementById('track-link-btn');
+  tl.href = trackUrl; tl.textContent = 'Track RMA: ' + rmaNum;
+  window.scrollTo(0, 0);
+  // Auto-trigger PDF after libraries settle
+  setTimeout(triggerPdfDownload, 1000);
+}
+
+function getPublicPageUrl(page, params) {
+  const isWeb = /^https?:$/i.test(location.protocol);
+  const target = isWeb ? page : `${page}.html`;
+  const url = new URL(target, location.href);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+    });
+  }
+  return url.toString();
+}
+
+async function copyToClipboard(text, successMsg) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return successMsg;
+  }
+  const input = document.createElement('textarea');
+  input.value = text;
+  input.setAttribute('readonly', '');
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.select();
+  const copied = document.execCommand('copy');
+  document.body.removeChild(input);
+  if (!copied) throw new Error('Copy failed');
+  return successMsg;
+}
+
+async function copyTrackingLink() {
+  const link = document.getElementById('track-link-btn').href;
+  try {
+    alert(await copyToClipboard(link, 'Tracking link copied.'));
+  } catch (err) {
+    console.error(err);
+    alert('Could not copy the tracking link. Please copy it manually from the button.');
+  }
+}
+
+async function copySubmitLink() {
+  try {
+    alert(await copyToClipboard(getPublicPageUrl('submit'), 'Submission link copied.'));
+  } catch (err) {
+    console.error(err);
+    alert('Could not copy the submission link.');
+  }
+}
+
+function triggerPdfDownload() {
+  if (!currentTicket) { alert('No ticket data found. Please resubmit the form.'); return; }
+  if (!window.jspdf) { alert('PDF library is still loading — please click "Download PDF Copy" again in a moment.'); return; }
+  const btn = document.getElementById('downloadPdfBtn');
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+  btn.disabled = true;
+  generatePDF(currentTicket).then(() => {
+    btn.innerHTML = '✓ PDF Downloaded';
+    btn.style.background = 'var(--green)';
+  }).catch(err => {
+    console.error('PDF error:', err);
+    btn.innerHTML = '⚠ PDF failed — try again';
+    btn.disabled = false;
+    btn.style.background = '#b91c1c';
+  });
+}
+
+// ── PDF Generation ─────────────────────────────────────────────────────────
+async function generatePDF(t) {
+  const { jsPDF } = window.jspdf;
+  const doc  = new jsPDF('p', 'mm', 'a4');
+  const W    = 210;
+  const M    = 18;
+  const CW   = W - M * 2;
+
+  const NAVY   = [0,   52, 103];
+  const ORANGE = [255,  92,   4];
+  const LGREY  = [245, 247, 252];
+  const MGREY  = [220, 227, 240];
+
+  // ── HEADER ───────────────────────────────────────────────────────────────
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, W, 36, 'F');
+
+  if (LOGO_B64) {
+    doc.addImage(LOGO_B64, 'PNG', M, 4, 56, 28);
+  } else {
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text('DSD', M, 24);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Data Storage Distribution', M, 30);
+  }
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('RETURN MERCHANDISE AUTHORISATION', W - M, 14, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(180, 205, 235);
+  doc.text('Data Storage Distribution (PTY) LTD  ·  dsd.africa  ·  rma@dsd.africa', W - M, 21, { align: 'right' });
+
+  // Orange accent strip
+  doc.setFillColor(...ORANGE);
+  doc.rect(0, 36, W, 3.5, 'F');
+
+  // ── RMA REFERENCE BADGE ───────────────────────────────────────────────
+  const badgeY = 44;
+  doc.setFillColor(...LGREY);
+  doc.roundedRect(M, badgeY, CW, 17, 2, 2, 'F');
+  doc.setFillColor(...ORANGE);
+  doc.roundedRect(M, badgeY, 50, 17, 2, 2, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('RMA REFERENCE', M + 4, badgeY + 5.5);
+  doc.setFontSize(11);
+  doc.text(t.rma_number || '—', M + 4, badgeY + 13);
+
+  doc.setTextColor(...NAVY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  const cols = [
+    { label: 'Status',    value: t.status,       x: M + 56 },
+    { label: 'Submitted', value: new Date(t.created_at || Date.now()).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' }), x: M + 100 },
+    { label: 'Proof of Purchase', value: t.proof_of_purchase ? 'Yes' : 'No', x: M + 148 },
+  ];
+  cols.forEach(c => {
+    doc.setFont('helvetica', 'normal'); doc.text(c.label, c.x, badgeY + 5.5);
+    doc.setFont('helvetica', 'bold');   doc.text(c.value, c.x, badgeY + 13);
+  });
+
+  let y = badgeY + 23;
+
+  // ── SECTION HELPER ────────────────────────────────────────────────────
+  function sectionTable(title, rows, sy) {
+    doc.setFillColor(...NAVY);
+    doc.rect(M, sy, CW, 7.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text(title, M + 4, sy + 5.2);
+    doc.autoTable({
+      startY: sy + 7.5,
+      margin: { left: M, right: M },
+      tableWidth: CW,
+      head: [],
+      body: rows,
+      styles: { fontSize: 8.5, cellPadding: { top: 3.5, bottom: 3.5, left: 5, right: 5 }, lineColor: MGREY, lineWidth: 0.25 },
+      columnStyles: {
+        0: { cellWidth: 50, fontStyle: 'bold', textColor: NAVY, fillColor: LGREY },
+        1: { textColor: [25, 35, 60], fillColor: [255, 255, 255] }
+      },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      theme: 'plain',
+    });
+    return doc.lastAutoTable.finalY + 5;
+  }
+
+  y = sectionTable('1.  COLLECTION DETAILS', [
+    ['Contact Name',        t.contact_name        || '—'],
+    ['Contact Number',      t.contact_number      || '—'],
+    ['Alternative Contact', t.alternative_contact || '—'],
+    ['Email Address',       t.customer_email      || '—'],
+  ], y);
+
+  y = sectionTable('2.  COLLECTION ADDRESS', [
+    ['Store / Company',  t.store_name     || '—'],
+    ['Street Address',   t.street_address || '—'],
+    ['Suburb',           t.suburb         || '—'],
+    ['City',             t.city           || '—'],
+    ['Postal Code',      t.postal_code    || '—'],
+  ], y);
+
+  y = sectionTable('3.  PRODUCT & INVOICE DETAILS', [
+    ['Brand',                t.brand              || '—'],
+    ['Serial / Invoice No.', t.serial_invoice_no  || '—'],
+    ['Purchase Date',        t.purchase_date
+      ? new Date(t.purchase_date + 'T12:00:00').toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' })
+      : '—'],
+    ['Fault Description',    t.fault_description  || '—'],
+  ], y);
+
+  // Attachments note
+  if (t.attachments && t.attachments.length) {
+    doc.setFillColor(...LGREY);
+    doc.rect(M, y, CW, 11, 'F');
+    doc.setDrawColor(...ORANGE);
+    doc.setLineWidth(0.4);
+    doc.line(M, y, M, y + 11);
+    doc.setTextColor(...NAVY);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text(`  ${t.attachments.length} supporting file(s) submitted online — viewable in the DSD dashboard`, M + 4, y + 7);
+    y += 16;
+  }
+
+  // Important notes box
+  doc.setFillColor(...ORANGE);
+  doc.rect(M, y, CW, 7, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text('IMPORTANT NOTES', M + 4, y + 4.8);
+  y += 9;
+  const notes = [
+    '• Collections are scheduled for the beginning of each new month.',
+    '• For additional returns before collection, email rma@dsd.africa quoting your RMA number.',
+    '• Warranty exclusions apply to surveillance devices, dashcams and continuous recording devices.',
+  ];
+  doc.setFillColor(255, 248, 240);
+  doc.rect(M, y, CW, notes.length * 6 + 4, 'F');
+  doc.setDrawColor(...ORANGE);
+  doc.setLineWidth(0.5);
+  doc.line(M, y, M, y + notes.length * 6 + 4);
+  doc.setTextColor(70, 40, 10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  notes.forEach((n, i) => doc.text(n, M + 5, y + 5 + i * 6));
+  y += notes.length * 6 + 12;
+
+  // Signature lines
+  doc.setDrawColor(...MGREY);
+  doc.setLineWidth(0.3);
+  doc.line(M,           y, M + CW / 2 - 8, y);
+  doc.line(M + CW / 2 + 8, y, M + CW,     y);
+  doc.setTextColor(160, 170, 190);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Customer Signature', M, y + 5);
+  doc.text('Date', M + CW / 2 + 10, y + 5);
+
+  // Footer
+  const pH = doc.internal.pageSize.height;
+  doc.setFillColor(...NAVY);
+  doc.rect(0, pH - 14, W, 14, 'F');
+  doc.setFillColor(...ORANGE);
+  doc.rect(0, pH - 14, W, 1.5, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text('Data Storage Distribution (PTY) LTD  ·  www.dsd.africa  ·  rma@dsd.africa', W / 2, pH - 7, { align: 'center' });
+  doc.setTextColor(160, 195, 235);
+  doc.setFontSize(7);
+  doc.text('Auto-generated on submission — retain this document and quote your RMA number in all correspondence.', W / 2, pH - 3, { align: 'center' });
+
+  doc.save('DSD_RMA_' + (t.rma_number || 'form') + '.pdf');
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('form-page').style.display = '';
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('rmaForm').reset();
+  document.getElementById('submitBtn').innerHTML = 'Submit RMA Request';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('uploadProgress').style.display = 'none';
+  selectedFiles = []; renderPreviews();
+  clearErrors(); currentTicket = null;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

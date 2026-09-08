@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DSD – Track My RMA</title>
+  <style>
+    :root {
+      --red:   #ff5c04;
+      --red-d: #e04e00;
+      --blue:  #414aae;
+      --navy:  #003467;
+      --dark:  #0d1a2e;
+      --text:  #1a2030;
+      --muted: #5f7080;
+      --border:#dde3ed;
+      --bg:    #f0f4f9;
+      --card:  #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { background: var(--navy); border-bottom: 4px solid var(--red); padding: 16px 24px; display: flex; align-items: center; gap: 14px; }
+    .logo-box { background: linear-gradient(135deg, var(--blue) 0%, var(--red) 100%); width: 46px; height: 46px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; }
+    .header-text .name { font-size: 18px; font-weight: 700; color: #fff; }
+    .header-text .sub  { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: .5px; }
+    .page { max-width: 600px; margin: 0 auto; padding: 40px 20px 60px; }
+    h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .lead { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+    .search-card { background: var(--card); border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 24px; margin-bottom: 24px; }
+    .quick-links { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+    .quick-link, .btn-share {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border-radius: 7px; padding: 11px 16px; font-size: 13px; font-weight: 700; text-decoration: none;
+    }
+    .quick-link { background: var(--blue); color: #fff; }
+    .quick-link:hover { background: #343c8c; }
+    .btn-share { background: #eef3fb; color: var(--navy); border: 1px solid var(--border); cursor: pointer; }
+    .btn-share:hover { border-color: var(--blue); color: var(--blue); }
+    .search-card label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; }
+    .search-row { display: flex; gap: 10px; }
+    .search-row input {
+      flex: 1; border: 1.5px solid var(--border); background: #fff; color: var(--text);
+      padding: 12px 14px; border-radius: 7px; font-size: 15px; font-family: monospace;
+      font-weight: 700; letter-spacing: 1px; outline: none; text-transform: uppercase;
+    }
+    .search-row input:focus { border-color: var(--red); }
+    .search-row input::placeholder { font-weight: 400; letter-spacing: 0; text-transform: none; font-family: 'Segoe UI', sans-serif; color: #bbb; }
+    .btn-track { background: var(--red); color: #fff; border: none; padding: 12px 24px; border-radius: 7px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .btn-track:hover { background: var(--red-d); }
+    .btn-track:disabled { background: #ccc; }
+    #track-error { color: var(--red); font-size: 13px; margin-top: 10px; }
+
+    /* ── RESULT ── */
+    #result-card { display: none; background: var(--card); border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); overflow: hidden; }
+    .rc-head { background: var(--dark); color: #fff; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; }
+    .rc-rma { font-family: monospace; font-size: 18px; font-weight: 900; color: var(--red); letter-spacing: 1px; }
+    .rc-body { padding: 20px 22px; }
+
+    .status-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .status-icon {
+      min-width: 60px; height: 60px; padding: 0 14px;
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      background: #fff5f0; color: var(--red); font-size: 11px; font-weight: 800; letter-spacing: 1px;
+      border: 1px solid rgba(255,92,4,.15);
+    }
+    .status-label { font-size: 13px; color: var(--muted); }
+    .status-name { font-size: 20px; font-weight: 800; }
+
+    .progress-bar { margin-bottom: 24px; }
+    .pb-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; }
+    .pb-steps { display: flex; align-items: center; gap: 0; }
+    .pb-step { flex: 1; text-align: center; position: relative; }
+    .pb-step::before {
+      content: ''; position: absolute; top: 11px; left: 50%; right: -50%;
+      height: 3px; background: var(--border); z-index: 0;
+    }
+    .pb-step:last-child::before { display: none; }
+    .pb-dot {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--border);
+      margin: 0 auto 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff; position: relative; z-index: 1;
+    }
+    .pb-dot.done { background: #16a34a; }
+    .pb-dot.active { background: var(--red); box-shadow: 0 0 0 4px rgba(255,92,4,.2); }
+    .pb-txt { font-size: 10px; color: var(--muted); line-height: 1.2; }
+    .pb-txt.active { color: var(--red); font-weight: 700; }
+    .pb-txt.done   { color: #16a34a; font-weight: 600; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+    .dg-field { display: flex; flex-direction: column; gap: 4px; }
+    .dg-key { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+    .dg-val { font-size: 13px; color: var(--text); }
+
+    .footer { text-align: center; padding: 24px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 40px; }
+    .footer a { color: var(--red); text-decoration: none; }
+
+    .spinner { display:inline-block; width:16px;height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    @media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } .search-row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <img src="assets/dsd-logo.png" alt="DSD" style="height:46px;object-fit:contain;filter:brightness(0) invert(1);" />
+  <div class="header-text">
+    <div class="name">Track My RMA</div>
+    <div class="sub">Data Storage Distribution · dsd.africa</div>
+  </div>
+</header>
+
+<div class="page">
+  <h1>Track Your Return</h1>
+  <p class="lead">Enter your RMA number below to check the current status of your return.</p>
+  <div class="quick-links">
+    <a class="quick-link" href="submit.html">Submit a New RMA</a>
+    <button class="btn-share" type="button" onclick="copyTrackPageLink()">Copy Tracking Page Link</button>
+  </div>
+
+  <div class="search-card">
+    <label>Your RMA Number</label>
+    <div class="search-row">
+      <input id="rma-input" placeholder="e.g. DSD-RMA-202605-0001"
+        onkeydown="if(event.key==='Enter')trackRMA()" />
+      <button class="btn-track" id="trackBtn" onclick="trackRMA()">Track</button>
+    </div>
+    <div id="track-error"></div>
+  </div>
+
+  <div id="result-card">
+    <div class="rc-head">
+      <div>
+        <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Return Merchandise Authorisation</div>
+        <div class="rc-rma" id="r-rma">—</div>
+      </div>
+      <div style="font-size:12px;color:#777;">Submitted: <span id="r-date">—</span></div>
+    </div>
+    <div class="rc-body">
+
+      <div class="status-row">
+        <div class="status-icon" id="r-icon">STATUS</div>
+        <div>
+          <div class="status-label">Current Status</div>
+          <div class="status-name" id="r-status-name">—</div>
+        </div>
+      </div>
+
+      <div class="progress-bar">
+        <div class="pb-label">Progress</div>
+        <div class="pb-steps" id="pb-steps"></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="dg-field"><div class="dg-key">Product</div><div class="dg-val" id="r-brand">—</div></div>
+        <div class="dg-field"><div class="dg-key">Serial / Invoice</div><div class="dg-val" id="r-serial">—</div></div>
+        <div class="dg-field"><div class="dg-key">Store</div><div class="dg-val" id="r-store">—</div></div>
+        <div class="dg-field"><div class="dg-key">Contact</div><div class="dg-val" id="r-contact">—</div></div>
+        <div class="dg-field" style="grid-column:1/-1;"><div class="dg-key">Collection Address</div><div class="dg-val" id="r-addr">—</div></div>
+      </div>
+
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);text-align:center;">
+        Questions? Email <a href="mailto:rma@dsd.africa">rma@dsd.africa</a>
+        quoting your RMA number.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <a href="https://www.dsd.africa">dsd.africa</a> &nbsp;·&nbsp;
+  <a href="submit.html">Submit a new RMA</a> &nbsp;·&nbsp;
+  © 2026 DSD Storage Hardware Solutions
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://abucbojsosfxdaufdapw.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidWNib2pzb3NmeGRhdWZkYXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2Mjg4NTUsImV4cCI6MjA5MzIwNDg1NX0.IjswX2er9SYno_2l-c3IPuuT8o5PCxtP2Ms3EaECm1E';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const STAGES = ['Entered','Received','In Assessment','In Repair','Quality Check','Ready for Collection','Returned to Client'];
+// Pre-fill from URL ?rma=
+window.addEventListener('load', () => {
+  const p = new URLSearchParams(location.search);
+  const q = p.get('rma');
+  if (q) { document.getElementById('rma-input').value = q; trackRMA(); }
+});
+
+async function trackRMA() {
+  const raw = document.getElementById('rma-input').value.trim().toUpperCase();
+  const err = document.getElementById('track-error');
+  const btn = document.getElementById('trackBtn');
+  err.textContent = '';
+  document.getElementById('result-card').style.display = 'none';
+  if (!raw) { err.textContent = 'Please enter your RMA number.'; return; }
+
+  btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+
+  const { data, error } = await sb.from('rma_tickets')
+    .select('*').eq('rma_number', raw).single();
+
+  btn.innerHTML = 'Track'; btn.disabled = false;
+
+  if (error || !data) {
+    err.textContent = 'RMA number not found. Please check and try again, or email rma@dsd.africa.';
+    return;
+  }
+
+  populateResult(data);
+}
+
+function populateResult(t) {
+  document.getElementById('r-rma').textContent        = t.rma_number;
+  document.getElementById('r-date').textContent       = fmtDate(t.created_at);
+  document.getElementById('r-status-name').textContent = t.status;
+  document.getElementById('r-brand').textContent      = t.brand;
+  document.getElementById('r-serial').textContent     = t.serial_invoice_no;
+  document.getElementById('r-store').textContent      = t.store_name || '—';
+  document.getElementById('r-contact').textContent    = t.contact_name;
+  document.getElementById('r-addr').textContent       = [t.street_address,t.suburb,t.city,t.postal_code].filter(Boolean).join(', ');
+
+  // Progress bar
+  const curIdx = STAGES.indexOf(t.status);
+  document.getElementById('pb-steps').innerHTML = STAGES.map((s,i) => {
+    const cls = i < curIdx ? 'done' : i === curIdx ? 'active' : '';
+    return `<div class="pb-step">
+      <div class="pb-dot ${cls}">${i < curIdx ? '✓' : i+1}</div>
+      <div class="pb-txt ${cls}">${s.replace(' ','\n')}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('result-card').style.display = 'block';
+}
+
+function getPublicPageUrl(page, params) {
+  const isWeb = /^https?:$/i.test(location.protocol);
+  const target = isWeb ? page : `${page}.html`;
+  const url = new URL(target, location.href);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+    });
+  }
+  return url.toString();
+}
+
+async function copyTrackPageLink() {
+  const text = getPublicPageUrl('track');
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const input = document.createElement('textarea');
+      input.value = text;
+      input.setAttribute('readonly', '');
+      input.style.position = 'fixed';
+      input.style.opacity = '0';
+      document.body.appendChild(input);
+      input.select();
+      const copied = document.execCommand('copy');
+      document.body.removeChild(input);
+      if (!copied) throw new Error('Copy failed');
+    }
+    alert('Tracking page link copied.');
+  } catch (err) {
+    console.error(err);
+    alert('Could not copy the tracking page link.');
+  }
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+</script>
+</body>
+</html>
